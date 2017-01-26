@@ -15,7 +15,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     var date = Date()
     let calendar = Calendar.current
 
-    @IBOutlet weak var label_Latitude: UILabel!
+//    @IBOutlet weak var label_Latitude: UILabel!
     @IBOutlet weak var label_Longitude: UILabel!
     @IBOutlet weak var label_RealTime: UILabel!
     @IBOutlet weak var label_ClockTime: UILabel!
@@ -40,7 +40,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     
     func UI_UpdateLabels() {
         if CLLocationManager.locationServicesEnabled() {
-            label_Latitude.text = String(Double((self.locationManager.location?.coordinate.latitude)!))
+            //label_Latitude.text = String(Double((self.locationManager.location?.coordinate.latitude)!))
             label_Longitude.text = String(Double((self.locationManager.location?.coordinate.longitude)!))
             label_RealTime.text = handleRealTime()
             
@@ -61,8 +61,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         let seconds = calendar.component(.second, from: date)
         
         UIView.animate(withDuration: 0.5, delay: 0, options: .curveEaseOut, animations: ({
-            let timeArc = UIBezierPath(arcCenter: CGPoint(x: 187,y: 333), radius: CGFloat(120), startAngle: CGFloat(0), endAngle:CGFloat((2 * M_PI) * (Double(seconds % 60) / 60.0) - 0.0000001), clockwise: true)
-            let oppositeArc = UIBezierPath(arcCenter: CGPoint(x: 187,y: 333), radius: CGFloat(120), startAngle: CGFloat(0), endAngle:CGFloat((2 * M_PI) * (Double(seconds % 60) / 60.0) - 0.0000001), clockwise: false)
+            let timeArc = UIBezierPath(arcCenter: CGPoint(x: 187,y: 333), radius: CGFloat(120), startAngle: CGFloat((M_PI * -0.5)), endAngle:CGFloat((M_PI * -0.5) + (2 * M_PI) * (Double(minutes % 60) / 60.0) - 0.0000001), clockwise: true)
+            let oppositeArc = UIBezierPath(arcCenter: CGPoint(x: 187,y: 333), radius: CGFloat(120), startAngle: CGFloat((M_PI * -0.5)), endAngle:CGFloat((M_PI * -0.5) + (2 * M_PI) * (Double(minutes % 60) / 60.0) - 0.0000001), clockwise: false)
         
             let shapeLayer = CAShapeLayer()
             let shapeLayerOpposite = CAShapeLayer()
@@ -70,14 +70,14 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             shapeLayerOpposite.path = oppositeArc.cgPath
             //change the fill color
             shapeLayer.fillColor = UIColor.clear.cgColor
-            shapeLayer.strokeColor = UIColor.red.cgColor
+            shapeLayer.strokeColor = UIColor.white.cgColor
             shapeLayer.lineWidth = 10.0
             self.view.layer.addSublayer(shapeLayer)
             
             shapeLayerOpposite.fillColor = UIColor.clear.cgColor
             shapeLayerOpposite.strokeColor = UIColor.white.cgColor
             shapeLayerOpposite.lineWidth = 11.0
-            self.view.layer.addSublayer(shapeLayerOpposite)
+            //self.view.layer.addSublayer(shapeLayerOpposite)
             
         }), completion: nil)
         
@@ -94,6 +94,30 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         let calendar = Calendar.current
         let offsetdate = calendar.date(byAdding: .second, value: Int(offset), to: gmtDate)
         
+        let hour = calendar.component(.hour, from: offsetdate!)
+        let minutes = calendar.component(.minute, from: offsetdate!)
+        let seconds = calendar.component(.second, from: offsetdate!)
+        
+        UIView.animate(withDuration: 0.5, delay: 0, options: .curveEaseOut, animations: ({
+            let timeArc = UIBezierPath(arcCenter: CGPoint(x: 187,y: 333), radius: CGFloat(130), startAngle: CGFloat((M_PI * -0.5)), endAngle:CGFloat((M_PI * -0.5) + (2 * M_PI) * (Double(minutes % 60) / 60.0) - 0.0000001), clockwise: true)
+            let oppositeArc = UIBezierPath(arcCenter: CGPoint(x: 187,y: 333), radius: CGFloat(130), startAngle: CGFloat((M_PI * -0.5)), endAngle:CGFloat((M_PI * -0.5) + (2 * M_PI) * (Double(minutes % 60) / 60.0) - 0.0000001), clockwise: false)
+            
+            let shapeLayer = CAShapeLayer()
+            let shapeLayerOpposite = CAShapeLayer()
+            shapeLayer.path = timeArc.cgPath
+            shapeLayerOpposite.path = oppositeArc.cgPath
+            //change the fill color
+            shapeLayer.fillColor = UIColor.clear.cgColor
+            shapeLayer.strokeColor = UIColor.white.cgColor
+            shapeLayer.lineWidth = 5.0
+            self.view.layer.addSublayer(shapeLayer)
+            
+            shapeLayerOpposite.fillColor = UIColor.clear.cgColor
+            shapeLayerOpposite.strokeColor = UIColor.white.cgColor
+            shapeLayerOpposite.lineWidth = 6.0
+            //self.view.layer.addSublayer(shapeLayerOpposite)
+            
+        }), completion: nil)
         
         
         return formatter.string(from: offsetdate!)
