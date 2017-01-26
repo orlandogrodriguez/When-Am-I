@@ -7,19 +7,110 @@
 //
 
 import UIKit
+import CoreLocation
 
-class ViewController: UIViewController {
+class ViewController: UIViewController, CLLocationManagerDelegate {
+    
+    let locationManager = CLLocationManager()
+    var date = Date()
+    let calendar = Calendar.current
 
+    @IBOutlet weak var label_Latitude: UILabel!
+    @IBOutlet weak var label_Longitude: UILabel!
+    @IBOutlet weak var label_RealTime: UILabel!
+    @IBOutlet weak var label_ClockTime: UILabel!
+    
     override func viewDidLoad() {
         super.viewDidLoad()
-        // Do any additional setup after loading the view, typically from a nib.
+        handleLocationServices()
+        _ = Timer.scheduledTimer(withTimeInterval: 1, repeats: true, block: {_ in 
+            self.UI_UpdateLabels()
+            
+        })
+        UI_UpdateLabels()
     }
-
-    override func didReceiveMemoryWarning() {
-        super.didReceiveMemoryWarning()
-        // Dispose of any resources that can be recreated.
+    
+    func handleLocationServices() {
+        locationManager.requestAlwaysAuthorization()
+        locationManager.requestWhenInUseAuthorization()
+        locationManager.delegate = self
+        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.startUpdatingLocation()
     }
-
-
+    
+    func UI_UpdateLabels() {
+        if CLLocationManager.locationServicesEnabled() {
+            label_Latitude.text = String(Double((self.locationManager.location?.coordinate.latitude)!))
+            label_Longitude.text = String(Double((self.locationManager.location?.coordinate.longitude)!))
+            label_RealTime.text = handleRealTime()
+            
+        }
+        let time = handleTime()
+        label_ClockTime.text = time
+    }
+    
+    func handleTime() -> (String) {
+        date = Date()
+        
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss"
+        let out:String = formatter.string(from: date)
+        
+        let hour = calendar.component(.hour, from: date)
+        let minutes = calendar.component(.minute, from: date)
+        let seconds = calendar.component(.second, from: date)
+        
+        UIView.animate(withDuration: 0.5, delay: 0, options: .curveEaseOut, animations: ({
+            let timeArc = UIBezierPath(arcCenter: CGPoint(x: 187,y: 333), radius: CGFloat(120), startAngle: CGFloat(0), endAngle:CGFloat((2 * M_PI) * (Double(seconds % 60) / 60.0) - 0.0000001), clockwise: true)
+            let oppositeArc = UIBezierPath(arcCenter: CGPoint(x: 187,y: 333), radius: CGFloat(120), startAngle: CGFloat(0), endAngle:CGFloat((2 * M_PI) * (Double(seconds % 60) / 60.0) - 0.0000001), clockwise: false)
+        
+            let shapeLayer = CAShapeLayer()
+            let shapeLayerOpposite = CAShapeLayer()
+            shapeLayer.path = timeArc.cgPath
+            shapeLayerOpposite.path = oppositeArc.cgPath
+            //change the fill color
+            shapeLayer.fillColor = UIColor.clear.cgColor
+            shapeLayer.strokeColor = UIColor.red.cgColor
+            shapeLayer.lineWidth = 10.0
+            self.view.layer.addSublayer(shapeLayer)
+            
+            shapeLayerOpposite.fillColor = UIColor.clear.cgColor
+            shapeLayerOpposite.strokeColor = UIColor.white.cgColor
+            shapeLayerOpposite.lineWidth = 11.0
+            self.view.layer.addSublayer(shapeLayerOpposite)
+            
+        }), completion: nil)
+        
+        print(seconds)
+        return out
+    }
+    
+    func handleRealTime() -> (String) {
+        let gmtDate = Date()
+        let formatter = DateFormatter()
+        formatter.dateFormat = "HH:mm:ss"
+        formatter.timeZone = TimeZone(secondsFromGMT:0)
+        let offset = calculateOffsetTime(longitude: Double((self.locationManager.location?.coordinate.longitude)!))
+        let calendar = Calendar.current
+        let offsetdate = calendar.date(byAdding: .second, value: Int(offset), to: gmtDate)
+        
+        
+        
+        return formatter.string(from: offsetdate!)
+    }
+    
+    func calculateOffsetTime(longitude:Double) -> (Double) {
+        return (longitude / 15) * 3600
+    }
+    
+    func minutesFromSeconds(seconds:Int) -> (Int) {
+        return seconds / 60
+    }
+    
+    func hoursFromSeconds(seconds:Int) -> (Int) {
+        return seconds / 3600
+    }
+    
+    
 }
 
